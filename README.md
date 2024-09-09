@@ -10,6 +10,6 @@ Requirements:
 * tkinter.filedialog
 * threading
 * time
-* queue.
+* queue
 
 Install if you do not have these.
