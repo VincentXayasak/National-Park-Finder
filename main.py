@@ -7,12 +7,13 @@ import tkinter.filedialog
 import threading
 import time
 import queue
+from PIL import Image, ImageTk  
 
 API_KEY = "jz3Js8BTMlplh65eqZpyxMcKD6dUwaMlYE799poK"
 
 class Window(tk.Tk):
     """Window class"""
-    
+
     def __init__(self):
         super().__init__()
 
@@ -26,10 +27,19 @@ class Window(tk.Tk):
         self.geometry("800x800+800+100")
         self.resizable(False, False)
 
-        titleLabel = tk.Label(self,text="National Park Finder",font=("Arial", 25, "bold"),fg="black",anchor="center",justify="center",)
+        # Load and set background image
+        bg_image = Image.open("Yosemite.jpg")  
+        bg_image = bg_image.resize((800, 800), Image.ANTIALIAS)  
+        self.bg_photo = ImageTk.PhotoImage(bg_image)  
+
+        # Create a Label to hold the background image
+        bg_label = tk.Label(self, image=self.bg_photo)
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        titleLabel = tk.Label(self, text="National Park Finder", font=("Arial", 25, "bold"), fg="black", anchor="center", justify="center", bg="#f0f0f0")
         titleLabel.pack(pady=10)
 
-        instructLabel = tk.Label(self,text="Select Up To 5 States",font=("Arial", 15),fg="black",anchor="center",justify="center",)
+        instructLabel = tk.Label(self, text="Select Up To 5 States", font=("Arial", 15), fg="black", anchor="center", justify="center", bg="#f0f0f0")
         instructLabel.pack(pady=10)
 
         LB = tk.Listbox(self, selectmode="multiple", width=50, height=10)
@@ -49,7 +59,10 @@ class Window(tk.Tk):
 
                     def apiCall(state):
                         """API call and creates data structure."""
-                        data = requests.get("https://developer.nps.gov/api/v1/parks?stateCode="+states[state],headers={"X-Api-Key": API_KEY},)
+                        data = requests.get(
+                            "https://developer.nps.gov/api/v1/parks?stateCode="+states[state],
+                            headers={"X-Api-Key": API_KEY},
+                        )
 
                         self.stateParks[state] = {
                             d["name"]: {
@@ -88,7 +101,7 @@ class Window(tk.Tk):
 
                         LB.delete(0, tk.END)
                         for state in self.stateParks.keys():
-                            LB.insert(tk.END,*[state + ": " + park for park in self.stateParks[state].keys()],)
+                            LB.insert(tk.END,*[state + ": " + park for park in self.stateParks[state].keys()])
 
                         self.choice = False
 
@@ -110,7 +123,11 @@ class Window(tk.Tk):
                                 parkDict[state].append(park)
 
                         self.writeJSON(chosenDirectory, parkDict)
-                        showinfo("Saved","Saved Files: "+ ", ".join([state + ".json" for state in parkDict.keys()]),parent=self,)
+                        showinfo(
+                            "Saved",
+                            "Saved Files: "+ ", ".join([state + ".json" for state in parkDict.keys()]),
+                            parent=self,
+                        )
                         raise SystemExit()
                     else:
                         LB.selection_clear(0, tk.END)
@@ -121,7 +138,7 @@ class Window(tk.Tk):
         LB.pack()
         button.pack(pady=10)
 
-        statusLabel = tk.Label(self, text="", font=("Arial", 12), fg="black", anchor="center", justify="center")
+        statusLabel = tk.Label(self, text="", font=("Arial", 12), fg="black", anchor="center", justify="center", bg="#f0f0f0")
         statusLabel.pack(pady=10)
 
         self.processQueue(statusLabel)
